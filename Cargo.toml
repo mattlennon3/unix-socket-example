@@ -1,0 +1,12 @@
+[package]
+name = "unix-socket-example"
+version = "0.1.0"
+authors = ["mattlennon3 <mattlennon3@hotmail.co.uk>"]
+edition = "2018"
+
+[features]
+default = []
+
+[dependencies]
+signal-hook = "0.3.6"
+clap = "2.33.3"
