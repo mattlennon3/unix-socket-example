@@ -44,20 +44,20 @@ fn main() {
             stream.flush().unwrap();
         });
 
-        // Forced to keep the process open long enough for the server to read before closing the pipe
+        // Forced to keep the main process running long enough for the server to read before closing the pipe on the client side
         sleep(Duration::from_secs(2));
     }
 }
 
 
 fn socket_server(listener: UnixListener) {
+    // https://doc.rust-lang.org/std/os/unix/net/struct.Incoming.html
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
                 stream.set_read_timeout(Some(Duration::from_millis(1000))).unwrap();
                 println!("Reading socket");
                 thread::spawn(|| handle_client(stream));
-                println!("Done reading!");
             }
             Err(err) => {
                 println!("Server error: {}", err);
@@ -75,7 +75,7 @@ fn handle_client(mut stream: UnixStream) {
 
 pub fn reset_socket(path: &Path) {
     match fs::remove_file(path) {
-        Ok(()) => { println!("Removing previous socket") }
+        Ok(()) => { println!("Removing previous socket: {}", path.to_str().unwrap_or("")) }
         Err(_err) => ()
     }
 }
