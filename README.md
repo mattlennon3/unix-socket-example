@@ -9,7 +9,8 @@ Run the server with:
 Open a client connection with:  
 `cargo run -- --client`
 
-## Current problems:
+## Warning! I am currently looking for a solution to the below:
+### Current problems:
 - [ ] One way communication only, from the client to the server.
 
 ## References:
