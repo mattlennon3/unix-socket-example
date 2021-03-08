@@ -5,7 +5,7 @@ Example repository of a basic unix socket server and client.
 This repository demonstrates stream sockets, feel free to contribute a datagram example or add a link to one in this readme. Thanks.
 
 Run the server with:  
-`cargo run -- --server`
+`cargo run -- --server`  
 Open a client connection with:  
 `cargo run -- --client`
 
