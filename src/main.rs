@@ -37,15 +37,20 @@ fn main() {
         
     } else if matches.is_present("client") {
         let mut stream = UnixStream::connect(Path::new(SOCKET_NAME)).unwrap();
-        stream.set_write_timeout(Some(Duration::from_millis(1000))).unwrap();
+        // stream.set_write_timeout(Some(Duration::from_millis(1000))).unwrap();
 
         thread::spawn(move || {
-            stream.write_all(b"I am the client").unwrap();
+            stream.write_all(b"Hi, I am the client").unwrap();
             stream.flush().unwrap();
+
+            // // Uncomment me to see the issue reading the server response
+            // let mut response = String::new();
+            // stream.read_to_string(&mut response).unwrap();
+            // println!("Client received: {:?}", response);
         });
 
         // Forced to keep the main process running long enough for the server to read before closing the pipe on the client side
-        sleep(Duration::from_secs(2));
+        sleep(Duration::from_secs(2));    
     }
 }
 
@@ -70,7 +75,11 @@ fn socket_server(listener: UnixListener) {
 fn handle_client(mut stream: UnixStream) {
     let mut response = String::new();
     stream.read_to_string(&mut response).unwrap();
-    println!("Server: Got something: {:?}", response);
+    println!("Server received: {:?}", response);
+    
+    // // Uncomment me to see the issue responding to the client
+    // stream.write_all(b"Hi client, I am the server").unwrap();
+    // stream.flush().unwrap();
 }
 
 pub fn reset_socket(path: &Path) {
