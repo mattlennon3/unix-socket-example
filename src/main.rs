@@ -6,8 +6,14 @@ use std::thread;
 use std::thread::sleep;
 use std::time::Duration;
 use std::{fs, path::Path};
+use serde::{Serialize, Deserialize};
 
 static SOCKET_NAME: &str = "/tmp/rs-server-unix.socket";
+
+#[derive(serde::Serialize, Deserialize, Debug)]
+struct Example {
+    prop: u32
+}
 
 fn main() {
     let matches = App::new("unix-socket-example")
@@ -35,9 +41,17 @@ fn main() {
         let stream = UnixStream::connect(Path::new(SOCKET_NAME)).unwrap();
 
         thread::spawn(move || {
+
+            let client_data = Example {
+                prop: 300
+            };
+
+            // Very important to end with a newline so the server doesn't get stuck waiting for one via read_line
+            let serialized = format!("{}\n", serde_json::to_string(&client_data).unwrap());
+
             let mut writer = BufWriter::new(&stream);
             writer
-                .write_all("Hi, I am the client\n".as_bytes())
+                .write_all(serialized.as_bytes())
                 .expect("client could not write");
             writer.flush().expect("client could not flush");
 
@@ -51,7 +65,7 @@ fn main() {
         });
 
         // Forced to keep the main process running long enough for the server to read before closing the pipe on the client side
-        sleep(Duration::from_secs(1));
+        sleep(Duration::from_secs(2));
     }
 }
 
@@ -76,6 +90,10 @@ fn handle_client(stream: UnixStream) {
     let mut response = String::new();
     reader.read_line(&mut response).expect("could not read");
     println!("Server received: {:?}", response);
+    
+    let deserialized: Example = serde_json::from_str(&response).unwrap();
+
+    println!("N: {}", deserialized.prop);
 
     let mut writer = BufWriter::new(&stream);
     writer
