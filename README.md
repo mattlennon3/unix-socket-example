@@ -14,7 +14,7 @@ Open a client connection with:
 - The server's write socket closes when the server's read socket closes.
 - The server's read socket closes when the the client's write socket closes.
 
-https://stackoverflow.com/a/44076060/3033813
+[source](https://stackoverflow.com/a/44076060/3033813)
 
 ## References:
 https://doc.rust-lang.org/std/os/unix/net/struct.UnixStream.html

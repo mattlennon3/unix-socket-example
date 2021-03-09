@@ -1,17 +1,15 @@
-
 use clap::{App, Arg};
-use std::{io::{BufReader, BufWriter}, os::unix::net::{UnixListener, UnixStream}};
-use std::thread::sleep;
 use std::io::prelude::*;
-
+use std::io::{BufReader, BufWriter};
+use std::os::unix::net::{UnixListener, UnixStream};
+use std::thread;
+use std::thread::sleep;
 use std::time::Duration;
 use std::{fs, path::Path};
-use std::thread;
 
 static SOCKET_NAME: &str = "/tmp/rs-server-unix.socket";
 
 fn main() {
-
     let matches = App::new("unix-socket-example")
         .version("0.1.0")
         .author("Matt Lennon")
@@ -27,34 +25,35 @@ fn main() {
         let socket_path = Path::new(SOCKET_NAME);
         reset_socket(&socket_path);
 
-        let listener =
-            UnixListener::bind(socket_path).unwrap();
-        
+        let listener = UnixListener::bind(socket_path).unwrap();
+
         thread::spawn(move || socket_server(listener));
 
         // Wait forever for new connections
         loop {}
-        
     } else if matches.is_present("client") {
         let stream = UnixStream::connect(Path::new(SOCKET_NAME)).unwrap();
 
         thread::spawn(move || {
             let mut writer = BufWriter::new(&stream);
-            writer.write_all("Hi, I am the client\n".as_bytes()).expect("client could not write");
+            writer
+                .write_all("Hi, I am the client\n".as_bytes())
+                .expect("client could not write");
             writer.flush().expect("client could not flush");
 
             let mut reader = BufReader::new(&stream);
             let mut response = String::new();
-            reader.read_line(&mut response).expect("client could not read");
+            reader
+                .read_line(&mut response)
+                .expect("client could not read");
 
             println!("Client received: {:?}", response);
         });
-        
+
         // Forced to keep the main process running long enough for the server to read before closing the pipe on the client side
         sleep(Duration::from_secs(1));
     }
 }
-
 
 fn socket_server(listener: UnixListener) {
     // https://doc.rust-lang.org/std/os/unix/net/struct.Incoming.html
@@ -77,15 +76,19 @@ fn handle_client(stream: UnixStream) {
     let mut response = String::new();
     reader.read_line(&mut response).expect("could not read");
     println!("Server received: {:?}", response);
-    
+
     let mut writer = BufWriter::new(&stream);
-    writer.write_all("Hi client, I am the server\n".as_bytes()).expect("server could not write");
+    writer
+        .write_all("Hi client, I am the server\n".as_bytes())
+        .expect("server could not write");
     writer.flush().expect("server could not flush");
 }
 
 pub fn reset_socket(path: &Path) {
     match fs::remove_file(path) {
-        Ok(()) => { println!("Removing previous socket: {}", path.to_str().unwrap_or("")) }
-        Err(_err) => ()
+        Ok(()) => {
+            println!("Removing previous socket: {}", path.to_str().unwrap_or(""))
+        }
+        Err(_err) => (),
     }
 }
