@@ -88,6 +88,7 @@ fn socket_server(listener: UnixListener) {
 fn handle_client(stream: UnixStream) {
     let mut reader = BufReader::new(&stream);
     let mut response = String::new();
+    // using reader.read_to_string(&mut response) would read till EOF and close the connection
     reader.read_line(&mut response).expect("could not read");
     println!("Server received: {:?}", response);
     
@@ -100,6 +101,7 @@ fn handle_client(stream: UnixStream) {
         .write_all("Hi client, I am the server\n".as_bytes())
         .expect("server could not write");
     writer.flush().expect("server could not flush");
+    println!("Close server connection");
 }
 
 pub fn reset_socket(path: &Path) {
